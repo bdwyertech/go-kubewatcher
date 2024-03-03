@@ -28,7 +28,7 @@ import (
 )
 
 func main() {
-	ctrl.SetLogger(zap.New())
+	ctrl.SetLogger(zap.New(zap.ConsoleEncoder()))
 	logger := ctrl.Log.WithName("watcher")
 	cfg, err := clientcmd.BuildConfigFromFlags("", os.Getenv("KUBECONFIG"))
 	if err != nil {
@@ -44,7 +44,11 @@ func main() {
 		}
 		_, list, err := mapper.ServerGroupsAndResources()
 		if err != nil {
+			// Take a look at `kubectl get apiservices` if you hit an error here
 			logger.Error(err, "error discovering APIs")
+		}
+		if len(list) == 0 {
+			logger.Info("no API resources detected")
 			return
 		}
 		var choices []string
